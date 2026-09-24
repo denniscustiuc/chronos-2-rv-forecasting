@@ -1,0 +1,25 @@
+[project]
+name = "volpipe"
+version = "0.3.0"
+description = "Realized-volatility pipeline (yfinance + VOLARE), baselines, walk-forward evaluation and Brini (2026) replication"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "yfinance>=0.2.40",
+    "pyarrow>=14.0",
+    "scipy>=1.11",
+    "statsmodels>=0.14",
+]
+
+[project.optional-dependencies]
+plots = ["matplotlib>=3.7"]
+fred = ["pandas-datareader>=0.10"]
+dev = ["pytest>=7.4", "matplotlib>=3.7", "pandas-datareader>=0.10"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::FutureWarning:yfinance.*"]
+
+[tool.setuptools.packages.find]
+include = ["volpipe*", "volmodels*", "voleval*"]

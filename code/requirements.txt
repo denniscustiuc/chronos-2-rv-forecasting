@@ -1,0 +1,19 @@
+# Core pipeline
+pandas>=2.0
+numpy>=1.24
+yfinance>=0.2.40
+pyarrow>=14.0        # parquet output
+
+# Forecasting baselines + evaluation
+scipy>=1.11          # MEM QMLE, Diebold-Mariano t-distribution
+statsmodels>=0.14    # ARMA / ARFIMA estimation
+
+# Diagnostics / demos
+matplotlib>=3.7
+
+# Tests
+pytest>=7.4
+
+# Optional: risk_free_rate covariate (FRED). The pipeline degrades to an
+# all-NaN column if this is absent.
+pandas-datareader>=0.10
