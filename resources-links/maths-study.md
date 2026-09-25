@@ -1,0 +1,1 @@
+https://claude.ai/artifact/33UwtFm1FmsUazsH1zbt9g#184a3349-6f4c.msdx8j8vfn9.0~volatility-maths-study-plan
