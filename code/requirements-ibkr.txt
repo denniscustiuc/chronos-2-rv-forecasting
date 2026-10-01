@@ -1,0 +1,5 @@
+# Dependencies for the IBKR implied-volatility data bank (code/iv_ibkr.py).
+pandas>=2.0
+numpy>=1.24
+scipy>=1.11
+ib_async>=1.0

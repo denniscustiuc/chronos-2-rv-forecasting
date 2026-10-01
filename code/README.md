@@ -497,3 +497,70 @@ negative forecast in the first place.
 Everything above is checked by 224 passing tests, including the lookahead
 guards re-run on the VOLARE path with the exogenous channel attached, and a
 regression test that reproduces the 1.0e10 failure in one assertion.
+
+---
+
+# ivlog — implied-volatility data bank (IBKR)
+
+VOLARE has realized measures but **no implied volatility**, which the
+IV vs forecast vs RV comparison in `ideas/ideas.md` needs. This layer
+downloads it from Interactive Brokers.
+
+**What it stores.** IBKR's historical-data service returns one bar per day of
+an underlying's implied volatility (`OPTION_IMPLIED_VOLATILITY`) and its
+historical volatility (`HISTORICAL_VOLATILITY`). IBKR defines the IV as the
+at-market volatility for a maturity 30 calendar days ahead, built from two
+consecutive expiry months: a 30-day ATM IV, the same idea as the VIX.
+30 calendar days ≈ 21 trading days, so it lines up with our h = 22 horizon.
+
+`data/iv/ibkr_iv_daily.csv`, one row per (date, ticker), for the 40 Brini
+equities plus SPY (`ivlog/tickers.py`):
+
+| Column | Meaning |
+| --- | --- |
+| `iv` | IBKR 30-day implied volatility, daily close (annualised decimal, check against TWS) |
+| `iv_open`, `iv_high`, `iv_low` | the same through the day |
+| `hv` | IBKR's historical (realized) volatility, daily close |
+| `retrieved` | date the row was downloaded from IBKR |
+
+**Setup (once).**
+
+1. TWS or IB Gateway running and logged in on your computer. In TWS:
+   *Edit → Global Configuration → API → Settings* → tick
+   *Enable ActiveX and Socket Clients*, note the socket port (7496 live,
+   7497 paper). *Read-Only API* can stay ticked: we only read data.
+2. `pip install -r code/requirements-ibkr.txt`
+
+**Run.** From the repo root:
+
+```bash
+python code/iv_ibkr.py head                         # earliest IV date IBKR has, per ticker -> data/iv/ibkr_iv_earliest.csv
+python code/iv_ibkr.py backfill --start 2015-01-01  # once: download the history (saves after every ticker)
+python code/iv_ibkr.py update                       # when you need recent days: refresh the last 60
+```
+
+Add `--port 7497` (TWS paper) or `--port 4001` (IB Gateway) as needed, and
+`--tickers AAPL MSFT` to try a couple first. How far back IBKR's IV history
+goes is not documented; `head` asks IBKR directly.
+
+**No scheduled job.** IBKR keeps the IV history, so the data bank is
+downloaded once and topped up on demand: run `update` before an analysis and
+it re-downloads the last 60 days, replacing overlapping rows. Commit
+`data/iv/ibkr_iv_daily.csv` after a backfill or update so the repo holds a
+fixed copy: IBKR may revise its history or change its method, and the
+`retrieved` column records when each row was downloaded. A daily recorder
+would only be needed for data IBKR does not keep historically, such as full
+option chains (per-strike IVs and skew): data for expired options is
+generally not available through the API.
+
+**Market data.** IBKR's US options data costs USD 1.50/month for
+non-professionals (waived with USD 20 of monthly commissions) and 15-minute
+delayed data is free. Whether historical IV needs a live subscription is not
+documented: if a ticker comes back with error 354 ("not subscribed"), that is
+the answer.
+
+`ivlog/implied.py` computes the same kind of 30-day IV (plus 90/110 skew) from
+a raw option chain, tested offline against chains priced from a known surface
+(`tests/test_implied.py`). It can be used to cross-check IBKR's number or to
+measure skew, which IBKR's daily IV does not give. `tests/test_ibkr.py` covers
+the download helpers without needing TWS.

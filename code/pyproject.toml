@@ -22,4 +22,4 @@ testpaths = ["tests"]
 filterwarnings = ["ignore::FutureWarning:yfinance.*"]
 
 [tool.setuptools.packages.find]
-include = ["volpipe*", "volmodels*", "voleval*"]
+include = ["volpipe*", "volmodels*", "voleval*", "ivlog*"]
