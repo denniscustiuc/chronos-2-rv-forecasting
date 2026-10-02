@@ -15,7 +15,7 @@ machine, so everything here runs on a desktop, not in the cloud.  ``ib_async``
 is imported lazily so the pure helpers stay testable without it.
 
 How far back the history goes is not documented; ``earliest_dates`` asks IBKR
-(``reqHeadTimestamp``) per ticker.
+(``reqHeadTimeStamp``) per ticker.
 """
 
 from __future__ import annotations
@@ -149,7 +149,7 @@ class IBKRClient:
         return qualified[0]
 
     def earliest(self, contract, what: str = IV) -> date | None:
-        ts = self.ib.reqHeadTimestamp(contract, whatToShow=what, useRTH=True, formatDate=1)
+        ts = self.ib.reqHeadTimeStamp(contract, whatToShow=what, useRTH=True, formatDate=1)
         if not ts:
             return None
         return pd.Timestamp(ts).date()
